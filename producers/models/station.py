@@ -37,13 +37,13 @@ class Station(Producer):
         # replicas
         #
         #
-        topic_name = "org.chicago.cta.arrival" # TODO: Come up with a better topic name
+        topic_name = "org.chicago.cta.station.arrivals" # TODO: Come up with a better topic name
         super().__init__(
             topic_name,
             key_schema=Station.key_schema,
             value_schema=Station.value_schema, # TODO: Uncomment once schema is defined
             num_partitions=1,
-            num_replicas=1
+            num_replicas=1,
         )
 
         self.station_id = int(station_id)
@@ -62,19 +62,19 @@ class Station(Producer):
         # TODO: Complete this function by producing an arrival message to Kafka
         #
         #
-#         logger.info("arrival kafka integration incomplete - skipping")
+        # logger.info("arrival kafka integration incomplete - skipping")
         self.producer.produce(
            topic=self.topic_name,
            key={"timestamp": self.time_millis()},
            value={
-               "station_id": self.station_id,
-               "train_id": train.train_id,
-               "direction": direction,
-               "line": self.color.name,
-               "train_status": train.status.name,
-               "prev_station_id": prev_station_id,
-               "prev_direction": prev_direction
-           }
+               'station_id': self.station_id,
+               'train_id': train.train_id,
+               'direction': direction,
+               'line': self.color.name,
+               'train_status': train.status.name,
+               'prev_station_id': prev_station_id,
+               'prev_direction': prev_direction,
+           },
         )
 
     def __str__(self):
@@ -104,3 +104,4 @@ class Station(Producer):
         """Prepares the producer for exit by cleaning up the producer"""
         self.turnstile.close()
         super(Station, self).close()
+
