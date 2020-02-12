@@ -21,7 +21,7 @@ class Weather(Producer):
         "status", "sunny partly_cloudy cloudy windy precipitation", start=0
     )
 
-    rest_proxy_url = "http://rest-proxy:8082"
+    rest_proxy_url = "http://localhost:8082"
 
     key_schema = None
     value_schema = None
@@ -37,11 +37,9 @@ class Weather(Producer):
         #
         #
         super().__init__(
-            "org.chicago.cta.weather", # TODO: Come up with a better topic name
+            "org.chicago.weather", # TODO: Come up with a better topic name
             key_schema=Weather.key_schema,
             value_schema=Weather.value_schema,
-            num_partitions=1,
-            num_replicas=1
         )
 
         self.status = Weather.status.sunny
@@ -81,7 +79,7 @@ class Weather(Producer):
         # specify the Avro schemas and verify that you are using the correct Content-Type header.
         #
         #
-#         logger.info("weather kafka proxy integration incomplete - skipping")
+        # logger.info("weather kafka proxy integration incomplete - skipping")
         resp = requests.post(
            #
            #
@@ -99,16 +97,21 @@ class Weather(Producer):
                {
                    "key_schema": json.dumps(Weather.key_schema),
                    "value_schema": json.dumps(Weather.value_schema),
-                   "records": [{
-                       "key": {"timestamp": self.time_millis()},
-                       "value": {"temperature": self.temp, "status": self.status.name}
-                   }]
+                   "records": [
+                       {
+                           "key": {"timestamp": self.time_millis()},
+                           "value": {
+                               "temperature": self.temp,
+                               "status": self.status.name
+                           }
+                       }
+                   ]
                }
            ),
         )
         resp.raise_for_status()
 
-        logger.debug(
+        logger.info(
             "sent weather data to kafka, temp: %s, status: %s",
             self.temp,
             self.status.name,
